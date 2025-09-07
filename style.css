@@ -1,0 +1,141 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f3f4f6;
+    transition: background-color 0.3s;
+}
+
+/* Card Flipping Animation */
+.card {
+    perspective: 1000px;
+}
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+.card.flipped .card-inner {
+    transform: rotateY(180deg);
+}
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
+}
+.card-front {
+    background-color: #ffffff;
+    color: #1f2937;
+}
+.card-back {
+    background-color: #1f2937;
+    color: #f9fafb;
+    transform: rotateY(180deg);
+    word-break: break-word;
+}
+
+/* Language Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 24px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #d1d5db;
+    transition: .4s;
+    border-radius: 34px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: #a855f7;
+}
+input:checked + .slider:before {
+    transform: translateX(16px);
+}
+
+/* Message Box */
+.message-box {
+    position: fixed;
+    bottom: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    opacity: 0;
+    transition: opacity 0.5s, bottom 0.5s;
+    z-index: 1000;
+}
+.message-box.show {
+    opacity: 1;
+    bottom: 30px;
+}
+
+/* Selected List Item */
+.word-list-item.selected {
+    font-weight: 600;
+    color: #3b82f6;
+    border-left: 3px solid #3b82f6;
+    padding-left: 0.75rem;
+}
+
+/* Collapsible Sidebar Styles */
+.sidebar-modes {
+    min-width: 100px;
+    transition: width 0.3s ease-in-out;
+}
+.sidebar-modes.collapsed {
+    min-width: 100px;
+}
+.sidebar-modes.collapsed #sidebar-title {
+    opacity: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+.sidebar-modes.collapsed .sidebar-btn-text {
+    opacity: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+.sidebar-modes.collapsed #sidebar-toggle svg {
+    transform: rotate(180deg);
+}
+#sidebar-toggle svg {
+    transition: transform 0.3s ease-in-out;
+}
