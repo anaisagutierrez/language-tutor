@@ -26,6 +26,7 @@ const englishInput = document.getElementById('english-word');
 const spanishInput = document.getElementById('spanish-word');
 const commentInput = document.getElementById('comment');
 const typeInput = document.getElementById('word-type');
+const linkInput = document.getElementById('link'); // New element selector
 const wordsContainer = document.getElementById('words-container');
 const messageBox = document.getElementById('message-box');
 const searchInput = document.getElementById('search-input');
@@ -114,6 +115,7 @@ function displayWordDetails(word) {
             <p><span class="font-bold text-gray-800">Spanish:</span> ${word.spanish}</p>
             <p><span class="font-bold text-gray-800">Type:</span> ${word.type}</p>
             ${word.comment ? `<p><span class="font-bold text-gray-800">Comment:</span> ${word.comment}</p>` : ''}
+            ${word.link ? `<p><span class="font-bold text-gray-800">Link:</span> <a href="${word.link}" target="_blank" class="text-blue-600 hover:underline break-all">${word.link}</a></p>` : ''}
             <p><span class="font-bold text-gray-800">Learned:</span> ${word.learned ? 'Yes' : 'No'}</p>
         </div>
         <div class="flex space-x-4 mt-4">
@@ -143,6 +145,7 @@ window.editWord = (wordId) => {
     spanishInput.value = word.spanish;
     commentInput.value = word.comment || '';
     typeInput.value = word.type;
+    linkInput.value = word.link || ''; // Populate the link input field
 
     formTitleEl.textContent = 'Edit Word';
     addWordBtn.classList.add('hidden');
@@ -208,6 +211,7 @@ function renderFlashcards(wordsToRender) {
                 <div class="card-back p-4 sm:p-6 text-xl font-semibold flex flex-col items-center justify-center">
                     <span class="mb-2">${backContent}</span>
                     ${wordPair.comment ? `<p class="text-sm font-normal text-gray-300 mt-2 text-center break-words">${wordPair.comment}</p>` : ''}
+                    ${wordPair.link ? `<a href="${wordPair.link}" target="_blank" class="text-sm font-normal text-blue-300 mt-2 hover:underline break-all">Link</a>` : ''}
                     <button class="absolute top-2 right-2 text-white hover:text-red-400 transition" onclick="event.stopPropagation(); deleteWord('${wordPair.id}');">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" />
@@ -228,7 +232,9 @@ function startGame() {
     listModeContent.classList.add('hidden');
     flashcardSection.classList.add('hidden');
     gameSection.classList.remove('hidden');
-
+    
+    const isSpanish = languageToggle.checked;
+    
     const unlearnedWords = allWords.filter(word => !word.learned);
 
     if (unlearnedWords.length < 3) {
@@ -240,12 +246,13 @@ function startGame() {
     const shuffledWords = shuffleArray(unlearnedWords);
     currentWordPair = shuffledWords[0];
 
-    gameQuestionEl.textContent = currentWordPair.english;
+    // Set the question based on the language toggle
+    gameQuestionEl.textContent = isSpanish ? currentWordPair.spanish : currentWordPair.english;
 
-    const choices = [currentWordPair.spanish];
+    const choices = [isSpanish ? currentWordPair.english : currentWordPair.spanish];
     let incorrectWords = shuffledWords.slice(1);
     while (choices.length < 3 && incorrectWords.length > 0) {
-        choices.push(incorrectWords.pop().spanish);
+        choices.push(isSpanish ? incorrectWords.pop().english : incorrectWords.pop().spanish);
     }
     shuffleArray(choices);
 
@@ -254,15 +261,17 @@ function startGame() {
         const button = document.createElement('button');
         button.textContent = choice;
         button.className = 'bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-xl hover:bg-gray-300 transition duration-300 transform hover:scale-105';
-        button.onclick = () => checkAnswer(choice, button);
+        button.onclick = () => checkAnswer(choice, button, isSpanish);
         gameChoicesEl.appendChild(button);
     });
 
     startGameBtn.textContent = 'Next Round';
 }
 
-function checkAnswer(selectedChoice, button) {
-    if (selectedChoice === currentWordPair.spanish) {
+function checkAnswer(selectedChoice, button, isSpanish) {
+    const correctTranslation = isSpanish ? currentWordPair.english : currentWordPair.spanish;
+
+    if (selectedChoice === correctTranslation) {
         button.classList.remove('bg-gray-200', 'hover:bg-gray-300');
         button.classList.add('bg-green-500', 'text-white');
         showMessage('Correct!', 'success');
@@ -274,7 +283,7 @@ function checkAnswer(selectedChoice, button) {
 
         const allButtons = gameChoicesEl.querySelectorAll('button');
         allButtons.forEach(btn => {
-            if (btn.textContent === currentWordPair.spanish) {
+            if (btn.textContent === correctTranslation) {
                 btn.classList.add('bg-green-500', 'text-white');
             }
         });
@@ -332,17 +341,18 @@ form.addEventListener('submit', async (e) => {
     const spanish = spanishInput.value.trim();
     const comment = commentInput.value.trim();
     const type = typeInput.value;
+    const link = linkInput.value.trim();
 
     if (english && spanish) {
         try {
             if (wordId) {
                 const dbRef = db.ref(`vocabulary/${wordId}`);
-                await dbRef.update({ english, spanish, comment, type });
+                await dbRef.update({ english, spanish, comment, type, link });
                 showMessage('Word updated successfully!', 'success');
                 cancelEdit();
             } else {
                 const dbRef = db.ref('vocabulary');
-                await dbRef.push({ english, spanish, comment, type, learned: false });
+                await dbRef.push({ english, spanish, comment, type, link, learned: false });
                 showMessage('Word added successfully!', 'success');
                 form.reset();
             }
